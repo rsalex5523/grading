@@ -176,3 +176,214 @@ def plot_sold_proportion_by_price_group(df, grading_col, price_group_labels):
     fig.legend(handles, ['Sold', 'Not Sold'], loc='upper right')
     plt.tight_layout(rect=[0, 0, 1, 0.97])
     plt.show()
+
+
+
+def plot_overall_grading_distribution(df, plot_grading_order, color_map):
+    """
+    Generates and displays two pie charts for the overall distribution of
+    media and cover gradings.
+
+    Args:
+        df (pd.DataFrame): The input dataframe.
+        plot_grading_order (list): The order to display grades.
+        color_map (dict): A dictionary mapping grades to colors.
+    """
+    print("\n--- Generating Overall Grading Distribution Pie Charts ---")
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+    fig.suptitle('Overall Grading Distribution', fontsize=20, y=1.02)
+
+    # Media Grading Pie Chart
+    media_counts = df['mediaGrading'].value_counts().reindex(plot_grading_order)
+    axes[0].pie(
+        media_counts.dropna(),
+        labels=media_counts.dropna().index,
+        autopct='%1.1f%%',
+        startangle=90,
+        colors=[color_map.get(g) for g in media_counts.dropna().index]
+    )
+    axes[0].set_title('Media Grading', fontsize=16)
+    axes[0].axis('equal')
+
+    # Cover Grading Pie Chart
+    cover_counts = df['coverGrading'].value_counts().reindex(plot_grading_order)
+    axes[1].pie(
+        cover_counts.dropna(),
+        labels=cover_counts.dropna().index,
+        autopct='%1.1f%%',
+        startangle=90,
+        colors=[color_map.get(g) for g in cover_counts.dropna().index]
+    )
+    axes[1].set_title('Cover Grading', fontsize=16)
+    axes[1].axis('equal')
+
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_grading_by_status(df, grading_col, color_map, save_path=None):
+    """
+    Generates pie charts comparing grading distribution for 'Bought' vs. 'Not Bought' items.
+
+    Args:
+        df (pd.DataFrame): The input dataframe.
+        grading_col (str): The grading column to analyze ('mediaGrading' or 'coverGrading').
+        color_map (dict): A dictionary mapping grades to colors.
+        save_path (str, optional): Path to save the figure. Defaults to None.
+    """
+    print(f"\n--- Generating {grading_col} Distribution by Purchase Status ---")
+    df_bought = df[df['Status'] == 1]
+    df_not_bought = df[df['Status'] == 0]
+
+    bought_counts = df_bought[grading_col].value_counts().sort_index()
+    not_bought_counts = df_not_bought[grading_col].value_counts().sort_index()
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+    title_str = ' '.join(word.capitalize() for word in grading_col.replace('Grading', ' Grading').split())
+    fig.suptitle(f'Composition of {title_str} for Bought vs. Not Bought Groups', fontsize=16)
+
+    axes[0].pie(bought_counts, labels=bought_counts.index, autopct='%1.1f%%', startangle=90, colors=[color_map.get(g) for g in bought_counts.index])
+    axes[0].set_title('"Bought" Group')
+
+    axes[1].pie(not_bought_counts, labels=not_bought_counts.index, autopct='%1.1f%%', startangle=90, colors=[color_map.get(g) for g in not_bought_counts.index])
+    axes[1].set_title('"Not Bought" Group')
+
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Plot saved to {save_path}")
+
+    plt.show()
+
+
+def plot_stacked_barh_with_labels(data, title, plot_grading_order, colormap='viridis'):
+    """
+    Creates a stacked horizontal bar chart with percentage labels inside each segment.
+
+    Args:
+        data (pd.DataFrame): Crosstab/pivot table of proportions.
+        title (str): The title for the plot.
+        plot_grading_order (list): The order for grading categories.
+        colormap (str, optional): Matplotlib colormap. Defaults to 'viridis'.
+    """
+    ax = data[plot_grading_order].plot(
+        kind='barh',
+        stacked=True,
+        figsize=(14, 8),
+        colormap=colormap,
+        width=0.8
+    )
+
+    # Add percentage labels to each segment
+    for c in ax.containers:
+        # Each container is a set of bars for a given grade
+        labels = [f'{w*100:.1f}%' if w > 0.03 else '' for w in c.datavalues] # Only label segments > 3%
+        ax.bar_label(c, labels=labels, label_type='center', color='white', fontsize=10, fontweight='bold')
+
+    plt.title(title, fontsize=18, pad=20)
+    plt.xlabel('Proportion', fontsize=12)
+    plt.ylabel('Price Group', fontsize=12)
+    plt.legend(title='Grade', bbox_to_anchor=(1.02, 1), loc='upper left')
+    plt.tight_layout(rect=[0, 0, 0.9, 1])
+    plt.show()
+
+
+def plot_interaction_effect(df, x_col, y_col, hue_col, order, hue_order, title):
+    """
+    Visualizes the interaction between two categorical variables on a continuous outcome
+    using a point plot.
+
+    Args:
+        df (pd.DataFrame): The input dataframe.
+        x_col (str): The column for the x-axis.
+        y_col (str): The column for the y-axis (the outcome).
+        hue_col (str): The column for the hue variable (the moderator).
+        order (list): The order of categories for the x-axis.
+        hue_order (list): The order of categories for the hue.
+        title (str): The title for the plot.
+    """
+    print(f"\n--- Visualizing Interaction for {hue_col} ---")
+    g = sns.catplot(
+        x=x_col, y=y_col, hue=hue_col, data=df,
+        kind='point', height=6, aspect=1.8,
+        order=order, errorbar=None,
+        hue_order=hue_order
+    )
+    g.fig.suptitle(title, fontsize=16, y=1.03)
+    g.set_axis_labels("Price Group ($)", "Probability of being Bought")
+    g.ax.grid(True, linestyle='--', linewidth=0.5)
+    plt.tight_layout(rect=[0, 0, 1, 0.97])
+    plt.show()
+
+
+# ==============================================================================
+# STATISTICAL MODELING FUNCTIONS
+# ==============================================================================
+
+def run_logit_model(formula, data, model_name, plot_grading_order):
+    """
+    Runs a logistic regression model, prints the summary, and predicted probabilities.
+
+    Args:
+        formula (str): The model formula for statsmodels.
+        data (pd.DataFrame): The dataframe to use.
+        model_name (str): A descriptive name for the model.
+        plot_grading_order (list): The order for displaying grades in predictions.
+
+    Returns:
+        statsmodels.results.results.ResultWrapper: The fitted model result.
+    """
+    print(f"\n--- {model_name.upper()} ---")
+    model = smf.logit(formula=formula, data=data)
+    result = model.fit(disp=0, cov_type='HC1') # Use robust standard errors
+    print(result.summary())
+
+    # --- Predict and display probabilities ---
+    predictor_col = formula.split('~')[1].strip().replace('C(', '').replace(')', '')
+    print(f"\n--- Predicted Probability of Sale by {predictor_col} (from {model_name}) ---")
+    grades_to_predict = pd.DataFrame({predictor_col: data[predictor_col].cat.categories})
+    pred_prob = result.predict(grades_to_predict)
+    grades_to_predict['PredictedProbability'] = pred_prob
+    print(grades_to_predict.set_index(predictor_col).reindex(plot_grading_order).round(3))
+
+    return result
+
+
+def run_interaction_logit_model(formula, data, model_name, grading_col, price_col, plot_grading_order, quintile_labels):
+    """
+    Runs a logistic regression model with an interaction term.
+
+    Args:
+        formula (str): The model formula for statsmodels.
+        data (pd.DataFrame): The dataframe to use.
+        model_name (str): A descriptive name for the model.
+        grading_col (str): The name of the grading column.
+        price_col (str): The name of the price group column.
+        plot_grading_order (list): Order for rows in the probability table.
+        quintile_labels (list): Order for columns in the probability table.
+
+    Returns:
+        statsmodels.results.results.ResultWrapper or None: The fitted model result, or None if it fails.
+    """
+    print(f"\n--- {model_name.upper()} ---")
+    model = smf.logit(formula=formula, data=data)
+    try:
+        result = model.fit(disp=0, cov_type='HC1')
+        print(result.summary())
+
+        # --- Predict and display probabilities ---
+        print(f"\n--- Predicted Probability of Sale by Grade and Price (from {model_name}) ---")
+        all_combinations = pd.MultiIndex.from_product(
+            [data[grading_col].cat.categories, data[price_col].cat.categories],
+            names=[grading_col, price_col]
+        ).to_frame(index=False)
+        pred_prob = result.predict(all_combinations)
+        all_combinations['PredictedProbability'] = pred_prob
+        prob_table = all_combinations.pivot(index=grading_col, columns=price_col, values='PredictedProbability')
+        print(prob_table.reindex(plot_grading_order)[quintile_labels].round(3))
+
+        return result
+
+    except Exception as e:
+        print(f"\n--- MODEL FAILED TO CONVERGE OR ERRORED: {e} ---")
+        return None
+
