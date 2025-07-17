@@ -70,12 +70,14 @@ def print_descriptive_tables(df, price_group_labels):
         df (pandas.DataFrame): The prepared DataFrame.
         price_group_labels (list): The list of price group labels for ordering.
     """
+    # Define orders for display purposes
     plot_grading_order = ['NM', 'EX', 'VG', 'G']
+    plot_grading_order_reversed = plot_grading_order[::-1]
 
     print("\n--- Overall Status Counts (Bought vs. Not Bought) ---")
     print(df['Status'].value_counts())
-    
-    print("\n--- Summary of Price Ranges for each Pricegroup ---")
+
+    print("\n--- Summary of Price Ranges for each Price Group ---")
     price_summary = df.groupby('PriceGroup', observed=False)['BP'].describe()
     print(price_summary.reindex(price_group_labels))
 
@@ -83,39 +85,41 @@ def print_descriptive_tables(df, price_group_labels):
     media_price_summary = df.groupby('mediaGrading', observed=False)['BP'].describe()
     print(media_price_summary.reindex(plot_grading_order))
 
-    print("\n--- Proportion Bought for Media Grading within each Price Group ---")
-    media_prop_table = df.groupby(['mediaGrading', 'PriceGroup'], observed=False)['Status'].mean().unstack()
-    print(media_prop_table.reindex(plot_grading_order)[price_group_labels].round(3))
+    print("\n--- Summary of Prices (BP) for each Cover Grading ---")
+    cover_price_summary = df.groupby('coverGrading', observed=False)['BP'].describe()
+    print(cover_price_summary.reindex(plot_grading_order))
 
     print("\n--- Media Grading Counts within each Status ---")
     media_counts = pd.crosstab(df.mediaGrading, df.Status, margins=True, margins_name="Total")
     print(media_counts.reindex(plot_grading_order + ['Total']))
-    
+
     print("\n--- Cover Grading Counts within each Status ---")
     cover_counts = pd.crosstab(df.coverGrading, df.Status, margins=True, margins_name="Total")
     print(cover_counts.reindex(plot_grading_order + ['Total']))
-    
-    print("\n--- Proportion Bought per Media Grading (Likelihood of a grade being sold) ---")
+
+    print("\n--- Proportion Bought per Media Grading ---")
     print(df.groupby('mediaGrading', observed=False)['Status'].mean().reindex(plot_grading_order).round(3))
-    
-    print("\n--- Proportion Bought per Cover Grading (Likelihood of a grade being sold) ---")
+
+    print("\n--- Proportion Bought per Cover Grading ---")
     print(df.groupby('coverGrading', observed=False)['Status'].mean().reindex(plot_grading_order).round(3))
-    
+
     print("\n--- Proportion Bought for Media Grading within each Price Group ---")
     media_prop_table = df.groupby(['mediaGrading', 'PriceGroup'], observed=False)['Status'].mean().unstack()
-    print(media_prop_table.reindex(plot_grading_order)[quintile_labels].round(3))
-    
+    print(media_prop_table.reindex(plot_grading_order)[price_group_labels].round(3))
+
     print("\n--- Proportion Bought for Cover Grading within each Price Group ---")
     cover_prop_table = df.groupby(['coverGrading', 'PriceGroup'], observed=False)['Status'].mean().unstack()
-    print(cover_prop_table.reindex(plot_grading_order)[quintile_labels].round(3))
-    
+    print(cover_prop_table.reindex(plot_grading_order)[price_group_labels].round(3))
+
     print("\n--- Media Grading Distribution within each Price Group ---")
     media_dist_by_price = pd.crosstab(df.PriceGroup, df.mediaGrading, normalize='index')
-    print(media_dist_by_price.reindex(quintile_labels)[plot_grading_order_reversed].round(3))
-    
+    print(media_dist_by_price.reindex(price_group_labels)[plot_grading_order_reversed].round(3))
+
     print("\n--- Cover Grading Distribution within each Price Group ---")
     cover_dist_by_price = pd.crosstab(df.PriceGroup, df.coverGrading, normalize='index')
-    print(cover_dist_by_price.reindex(quintile_labels)[plot_grading_order_reversed].round(3))
+    print(cover_dist_by_price.reindex(price_group_labels)[plot_grading_order_reversed].round(3))
+
+
 
 
 # ==============================================================================
