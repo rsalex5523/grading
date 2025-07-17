@@ -1,2 +1,2 @@
 def printTest():
-	print("Hallo")
+	print("Test was successful")
