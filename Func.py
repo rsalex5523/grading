@@ -241,7 +241,6 @@ def plot_interaction_effect(result, df, hue_col, price_group_labels):
         print(f"--- Skipping interaction plot for {hue_col} because model failed. ---")
         return
 
-    print(f"\n--- Visualizing Interaction for {hue_col} ---")
     title_str = hue_col.replace('Grading', ' Grading')
     plot_grading_order = ['NM', 'EX', 'VG', 'G']
     
