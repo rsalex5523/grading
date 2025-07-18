@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pandas.api.types import CategoricalDtype
+import statsmodels.formula.api as smf
+
 
 # ==============================================================================
 # 1. DATA PREPARATION
