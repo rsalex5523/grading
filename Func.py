@@ -189,9 +189,8 @@ def plot_overall_grading_distribution(df, plot_grading_order, color_map):
         plot_grading_order (list): The order to display grades.
         color_map (dict): A dictionary mapping grades to colors.
     """
-    print("\n--- Generating Overall Grading Distribution Pie Charts ---")
     fig, axes = plt.subplots(1, 2, figsize=(12, 6))
-    fig.suptitle('Overall Grading Distribution', fontsize=20, y=1.02)
+    fig.suptitle(r'Overall Grading Distribution, N = {len(df)}', fontsize=20, y=1.02)
 
     # Media Grading Pie Chart
     media_counts = df['mediaGrading'].value_counts().reindex(plot_grading_order)
