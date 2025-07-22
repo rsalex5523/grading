@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -285,6 +286,10 @@ def run_continuous_interaction_model(df, grading_col, grading_ref_cat):
         return None
 
 
+# ==============================================================================
+# 4. PRICING SIMULATION (UPDATED FUNCTION)
+# ==============================================================================
+
 def plot_price_adjustment_simulation(result, df, grading_col, sim_params, formula_type='cosine'):
     """
     Visualizes the effect of a simulated price adjustment strategy using
@@ -303,10 +308,13 @@ def plot_price_adjustment_simulation(result, df, grading_col, sim_params, formul
 
     print(f"\n--- Plotting {formula_type.capitalize()} Simulation for {grading_col} ---")
     
+    # --- FIX: Use a more robust method to create the prediction grid ---
     price_points = np.linspace(df['BP'].min(), df['BP'].max(), 100)
     grades = df[grading_col].cat.categories
-    grid = pd.DataFrame(list(pd.core.reshape.util.cartesian_product([price_points, grades])))
-    grid.columns = ['BP', grading_col]
+    grid = pd.MultiIndex.from_product(
+        [price_points, grades], names=['BP', grading_col]
+    ).to_frame(index=False)
+    # This replaces the old method and prevents the ValueError.
 
     # 1. Calculate ORIGINAL predicted probabilities
     grid['Prob_Original'] = result.predict(grid)
