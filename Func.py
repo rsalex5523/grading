@@ -157,28 +157,50 @@ def plot_sold_proportion_by_grading(df, grading_col):
 def plot_sold_proportion_by_price_group(df, grading_col, price_group_labels):
     """
     Plots proportions sold by price group for each category in a grading column.
+    This version dynamically creates the correct number of subplots.
     """
     plot_grading_order = ['P', 'F', 'G', 'VG', 'EX', 'NM']
     title_text = 'Media' if grading_col == 'mediaGrading' else 'Cover'
+    
+    # Filter for grades present in the data to avoid errors with empty pivots
+    grades_in_data = [g for g in plot_grading_order if g in df[grading_col].unique()]
+    
     pivot = df.groupby([grading_col, 'PriceGroup'], observed=False)['Status'].value_counts(normalize=True).unstack(fill_value=0)
+    if 1 not in pivot.columns: pivot[1] = 0
+    if 0 not in pivot.columns: pivot[0] = 0
     pivot = pivot.rename(columns={1: 'Proportion Sold', 0: 'Proportion Not Sold'})
-    pivot = pivot.reindex(plot_grading_order, level=grading_col)
-    fig, axes = plt.subplots(2, 2, figsize=(12, 10), sharex=True, sharey=True)
+    pivot = pivot.reindex(grades_in_data, level=grading_col)
+
+    # --- DYNAMIC SUBPLOT CREATION (THE FIX) ---
+    n_grades = len(grades_in_data)
+    n_cols = 2 # Let's keep 2 columns for a nice layout
+    n_rows = math.ceil(n_grades / n_cols) # Calculate required rows
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(12, n_rows * 5), sharex=True, sharey=True)
     fig.suptitle(f'Proportion Sold by Price Group by {title_text} Grading', fontsize=20, y=1.02)
     axes = axes.flatten()
-    for i, grade in enumerate(plot_grading_order):
+
+    for i, grade in enumerate(grades_in_data):
         ax = axes[i]
-        data_to_plot = pivot.loc[grade]
-        data_to_plot[['Proportion Sold', 'Proportion Not Sold']].reindex(price_group_labels).plot(
-            kind='barh', stacked=True, ax=ax, color=['#4CAF50', '#E0E0E0'], width=0.8, legend=False
-        )
+        # Check if the grade exists in the pivot index to avoid errors
+        if grade in pivot.index.get_level_values(grading_col):
+            data_to_plot = pivot.loc[grade]
+            data_to_plot[['Proportion Sold', 'Proportion Not Sold']].reindex(price_group_labels).plot(
+                kind='barh', stacked=True, ax=ax, color=['#4CAF50', '#E0E0E0'], width=0.8, legend=False
+            )
         ax.set_title(f'{title_text} Grade: {grade}')
         ax.set_ylabel('Price Group')
         ax.set_xlabel('Proportion')
+
+    # Hide any unused subplots if the number of grades isn't perfectly even
+    for j in range(i + 1, len(axes)):
+        axes[j].set_visible(False)
+        
     handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, ['Sold', 'Not Sold'], loc='upper right')
+    fig.legend(handles, ['Not Sold', 'Sold'], loc='upper right') # Corrected legend order
     plt.tight_layout(rect=[0, 0, 1, 0.97])
     plt.show()
+
 
 
 
