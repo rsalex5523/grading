@@ -207,7 +207,7 @@ def plot_sold_proportion_by_price_group(df, grading_col, price_group_labels):
 
 def plot_overall_grading_distribution(df, plot_grading_order, color_map):
     """Generates pie charts for overall media and cover grading distributions."""
-    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
     fig.suptitle(f'Overall Grading Distribution, N = {len(df)}', fontsize=20, y=1.02)
     for i, col in enumerate(['mediaGrading', 'coverGrading']):
         counts = df[col].value_counts().reindex(plot_grading_order)
@@ -220,7 +220,7 @@ def plot_overall_grading_distribution(df, plot_grading_order, color_map):
 def plot_stacked_barh_with_labels(data, title, plot_grading_order):
     """Creates a stacked horizontal bar chart from pre-computed crosstab data."""
     ax = data[plot_grading_order].plot(
-        kind='barh', stacked=True, figsize=(14, 8), colormap='viridis_r', width=0.8)
+        kind='barh', stacked=True, figsize=(10, 5), colormap='viridis_r', width=0.8)
     for c in ax.containers:
         labels = [f'{w*100:.1f}%' if w > 0.03 else '' for w in c.datavalues]
         ax.bar_label(c, labels=labels, label_type='center', color='white', fontsize=10, fontweight='bold')
