@@ -266,7 +266,7 @@ def plot_interaction_effect(result, df, hue_col, price_group_labels):
         return
 
     title_str = hue_col.replace('Grading', ' Grading')
-    plot_grading_order = ['NM', 'EX', 'VG', 'G']
+    plot_grading_order = ['NM', 'EX', 'VG', 'G', 'P', 'F']
     
     # Create a grid of all combinations to predict on
     grid = pd.MultiIndex.from_product(
