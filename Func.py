@@ -37,7 +37,7 @@ def load_and_prepare_data(file_path, price_cap, num_price_groups, grading_ref_ca
 
     # --- Feature Engineering ---
     # Set dynamic reference category for Gradings
-    all_grading_cats = ['NM', 'EX', 'VG', 'G']
+    all_grading_cats = ['NM', 'EX', 'VG', 'G' ,'F', 'P']
     all_grading_cats.remove(grading_ref_cat)
     model_grading_order = [grading_ref_cat] + all_grading_cats
     grading_dtype = CategoricalDtype(categories=model_grading_order, ordered=True)
@@ -74,7 +74,7 @@ def print_descriptive_tables(df, price_group_labels):
         price_group_labels (list): The list of price group labels for ordering.
     """
     # Define orders for display purposes
-    plot_grading_order = ['NM', 'EX', 'VG', 'G']
+    plot_grading_order = ['NM', 'EX', 'VG', 'G', 'F', 'P']
     plot_grading_order_reversed = plot_grading_order[::-1]
 
     print("\n--- Overall Status Counts (Bought vs. Not Bought) ---")
@@ -142,7 +142,7 @@ def plot_sold_proportion_by_grading(df, grading_col):
     """
     Plots a stacked bar chart of sold vs. not sold proportions for a grading column.
     """
-    plot_grading_order = ['G', 'VG', 'EX', 'NM']
+    plot_grading_order = ['P', 'F', 'G', 'VG', 'EX', 'NM']
     title_text = 'Media' if grading_col == 'mediaGrading' else 'Cover'
     prop = df.groupby(grading_col, observed=False)['Status'].mean().reset_index().rename(columns={'Status': 'Proportion Sold'})
     prop['Proportion Not Sold'] = 1 - prop['Proportion Sold']
@@ -158,7 +158,7 @@ def plot_sold_proportion_by_price_group(df, grading_col, price_group_labels):
     """
     Plots proportions sold by price group for each category in a grading column.
     """
-    plot_grading_order = ['G', 'VG', 'EX', 'NM']
+    plot_grading_order = ['P', 'F', 'G', 'VG', 'EX', 'NM']
     title_text = 'Media' if grading_col == 'mediaGrading' else 'Cover'
     pivot = df.groupby([grading_col, 'PriceGroup'], observed=False)['Status'].value_counts(normalize=True).unstack(fill_value=0)
     pivot = pivot.rename(columns={1: 'Proportion Sold', 0: 'Proportion Not Sold'})
